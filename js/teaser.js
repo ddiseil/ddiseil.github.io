@@ -10,7 +10,7 @@
   /* scene, in table units */
   const W = 1040, D = 540, BASE = { x: 130, y: 280 }, CUBE = 54, HOME = { x: 650, y: 280, z: 205 };
   const GROUPS = [[[690, 92], [826, 62], [862, 166], [722, 196]], [[810, 428], [896, 388], [890, 482]], [[372, 462], [458, 420], [450, 502]]];
-  const XI = { x: 776, y: 128, yaw: 0.5 };
+  const XI = { x: 762, y: 34, yaw: 0.6 }; // to one side of the group, not its midpoint
   const GOOD = [[540, 190], [470, 250], [480, 340], [620, 300], [640, 440], [580, 90], [450, 130], [700, 320], [560, 360]];
   const yaw = (i) => [0.2, 0.9, -0.3, 0.55, 1.2, -0.6, 0.05, 0.75, -0.15, 1.0][i % 10];
   const fails = GROUPS.flatMap((g, k) => g.map(([x, y], i) => ({ x, y, g: k, i, ok: false })));

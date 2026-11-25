@@ -17,13 +17,14 @@ a { color: var(--ink); }
 header { padding-top: clamp(36px, 5.5vw, 72px); }
 .authors { margin-top: 22px; font-size: 1.25rem; color: var(--ink); } .authors span { margin-inline: 10px; white-space: nowrap; }
 .affil { color: var(--muted); margin-top: 2px; }
-.links { margin-top: 22px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.accepted { margin-top: 10px; color: var(--body); } .accepted strong { color: var(--ink); font-weight: 600; }
+.links { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .links a { background: var(--ink); color: #fff; text-decoration: none; padding: 7px 22px; border-radius: 99px; font-weight: 600; font-size: 1.05rem; }
 .links a:hover { background: var(--red); }
 :focus-visible { outline: 2.5px solid var(--red); outline-offset: 3px; }
 
 .teaser { margin-top: clamp(16px, 2.5vw, 30px); }
-#teaser { width: 100%; height: clamp(230px, min(50vw, 100vh - 420px), 540px); }
+#teaser { width: 100%; height: clamp(230px, min(50vw, 100vh - 455px), 540px); }
 .teaser figcaption { display: grid; justify-items: center; gap: 4px; margin-top: 4px; }
 #teaser-caption { font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem); color: var(--ink); min-height: 1.55em; text-wrap: balance; }
 button { font: inherit; font-size: 0.92rem; color: var(--muted); background: none; border: 0; padding: 4px 8px; cursor: pointer; } button:hover { color: var(--red); }
@@ -36,8 +37,21 @@ section { margin-top: clamp(60px, 8vw, 104px); scroll-margin-top: 24px; }
 .task video { background: var(--wash); aspect-ratio: 832 / 466; }
 .task figcaption { color: var(--muted); font-size: 1rem; margin-top: 5px; }
 .note { color: var(--muted); font-size: 1rem; margin-top: 18px; text-wrap: balance; }
-.plot { margin-top: 20px; overflow-x: auto; }
-.claim { margin-top: clamp(40px, 5vw, 60px); font-size: 1.3rem; color: var(--ink); font-weight: 600; text-wrap: balance; }
+.chart { position: relative; margin-top: clamp(48px, 6vw, 76px); text-align: left; }
+.chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px 24px; flex-wrap: wrap; }
+.chart-head h3 { font-size: clamp(1.35rem, 1.2rem + 0.7vw, 1.7rem); font-weight: 700; }
+.zoom { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.95rem; } .zoom span { margin-right: 8px; }
+.zoom button { border: 1px solid var(--line); min-width: 36px; height: 34px; padding: 0 10px; border-radius: 6px; color: var(--ink); font-size: 1rem; background: #fff; } .zoom button:hover:not(:disabled) { border-color: var(--red); color: var(--red); } .zoom button:disabled { color: #b3bac3; cursor: default; }
+.legend { display: flex; flex-wrap: wrap; gap: 2px 8px; margin: 12px 0 8px -8px; }
+.legend button { display: inline-flex; align-items: center; gap: 5px; color: var(--body); font-size: 1.02rem; padding: 3px 8px; border-radius: 6px; } .legend button:hover { color: var(--ink); background: var(--wash); } .legend button[aria-pressed="true"] { background: var(--wash); color: var(--ink); font-weight: 600; } .legend button.off { opacity: 0.45; } .legend button.off:hover { opacity: 1; }
+.plot { touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: crosshair; min-height: 716px; }
+.plot svg, .plot svg * { pointer-events: none; }
+@media (max-width: 839px) { .plot { min-height: 904px; } }
+@media (max-width: 679px) { .plot { min-height: 1046px; } }
+.plot svg { display: block; max-width: 100%; height: auto; overflow: visible; outline-offset: 6px; }
+.chart text { font-family: var(--font); fill: var(--muted); } .chart .task { fill: var(--ink); font-weight: 600; } .chart .num { font-variant-numeric: tabular-nums; } .chart .val { fill: var(--ink); font-weight: 700; } .chart .colhead { font-weight: 600; } .chart tspan.red { fill: var(--red); }
+.tip { position: absolute; z-index: 5; pointer-events: none; background: #fff; border: 1px solid #c9cfd7; border-radius: 6px; padding: 8px 13px; box-shadow: 0 6px 22px rgba(30, 36, 48, 0.14); font-size: 0.95rem; line-height: 1.35; white-space: nowrap; color: var(--muted); } .tip b, .tip span { display: flex; align-items: center; gap: 6px; } .tip b { color: var(--ink); } .tip .big { font-size: 1.3rem; font-weight: 700; color: var(--ink); } .tip small { font-size: 0.95rem; font-weight: 400; color: var(--muted); } .tip[hidden] { display: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .film { margin-top: 26px; aspect-ratio: 16 / 9; background: #171717; }
 .code { position: relative; max-width: 800px; margin: 24px auto 0; text-align: left; background: var(--wash); }
 .code button { position: absolute; right: 8px; top: 6px; }
@@ -48,7 +62,7 @@ main { padding-bottom: 72px; }
   #teaser-caption { min-height: 3.1em; }
   .tasks { grid-template-columns: 1fr; gap: 30px; }
   .task { grid-template-columns: 1fr 1fr; gap: 10px; } .task h3 { grid-column: 1 / -1; }
-  .plot img { width: 760px; max-width: none; }
+  .zoom span { display: none; }
   .code button { position: static; display: block; margin-left: auto; } pre { padding-top: 0; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
