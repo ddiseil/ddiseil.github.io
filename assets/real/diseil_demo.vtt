@@ -1,0 +1,109 @@
+WEBVTT
+
+00:00:00.600 --> 00:00:06.220
+This is DISEIL: Demonstration Distillation for Sample-Efficient Imitation Learning.
+
+00:00:06.720 --> 00:00:12.450
+Here it is demonstrated on a real UR5e robot arm, learning to lift a cube.
+
+00:00:13.870 --> 00:00:19.610
+The task looks simple: approach the cube, align the gripper, grasp it, and lift it off the table.
+
+00:00:20.610 --> 00:00:30.130
+The robot's learned policy sees the workspace through a camera, and reads the arm's joint positions. From these, it predicts the next action.
+
+00:00:31.380 --> 00:00:36.240
+Even a small change in the cube's position can lead to an incorrect approach.
+
+00:00:36.690 --> 00:00:42.050
+With limited demonstrations, the policy may struggle in unfamiliar positions.
+
+00:00:42.850 --> 00:00:48.150
+Orientation matters too: a rotated cube may need a different gripper alignment.
+
+00:00:49.350 --> 00:00:52.750
+First, an expert guides the arm to the cube by hand.
+
+00:00:53.000 --> 00:00:55.030
+The gripper then closes and lifts it.
+
+00:00:56.910 --> 00:01:00.940
+This is repeated with the cube at different positions on the table.
+
+00:01:03.570 --> 00:01:08.210
+These demonstrations train an initial policy by behavioural cloning.
+
+00:01:09.600 --> 00:01:12.450
+The initial policy then runs on its own.
+
+00:01:13.730 --> 00:01:17.750
+Here, the fingers close on the top edge of the cube, not around it.
+
+00:01:18.330 --> 00:01:21.970
+The gripper rises without the cube. The grasp has failed.
+
+00:01:23.930 --> 00:01:27.330
+Across the rollouts, most attempts still lift the cube.
+
+00:01:27.830 --> 00:01:33.970
+But the same weakness keeps recurring: the fingers land on the edge of the cube, rather than around it.
+
+00:01:35.270 --> 00:01:47.320
+Several failures can share one weakness. Rather than one demonstration per failure, DISEIL groups related failures and recommends one targeted demonstration for that shared weakness.
+
+00:01:48.630 --> 00:01:54.430
+First, a vision-language model examines the failed attempts and describes what went wrong.
+
+00:01:55.030 --> 00:02:00.360
+DISEIL groups similar failures together, and selects a recurring problem to address.
+
+00:02:01.060 --> 00:02:07.180
+A prescription language model recommends a configuration for the next expert demonstration.
+
+00:02:07.780 --> 00:02:14.460
+The expert demonstrates the task from that configuration, and the policy is updated with the new data.
+
+00:02:15.770 --> 00:02:21.670
+Here, DISEIL's recommended configuration is a new cube position, marked by the crosshair.
+
+00:02:22.170 --> 00:02:26.670
+This is where one additional expert demonstration should be collected.
+
+00:02:27.630 --> 00:02:30.430
+The cube is moved to the recommended position,
+
+00:02:32.280 --> 00:02:35.050
+and the overhead camera confirms the placement.
+
+00:02:36.730 --> 00:02:39.240
+From here, the policy runs on its own,
+
+00:02:39.630 --> 00:02:44.000
+and stops at its point of highest uncertainty, before reaching the cube.
+
+00:02:44.800 --> 00:02:50.940
+The expert then provides one targeted demonstration, guiding the gripper down around the cube.
+
+00:02:51.240 --> 00:02:53.900
+The gripper closes, and the cube is lifted.
+
+00:02:56.300 --> 00:03:02.980
+This single targeted demonstration is added to the existing dataset, and the policy is updated.
+
+00:03:04.370 --> 00:03:09.970
+The updated policy now runs on its own, with the cube near the recommended position.
+
+00:03:14.160 --> 00:03:15.990
+It grasps the cube and lifts it.
+
+00:03:18.930 --> 00:03:21.650
+Before the update, these grasp attempts failed.
+
+00:03:25.720 --> 00:03:27.910
+After the update, the cube is lifted.
+
+00:03:29.700 --> 00:03:38.090
+DISEIL identifies which additional demonstration is worth collecting, rather than collecting more demonstrations indiscriminately.
+
+00:03:38.590 --> 00:03:41.190
+Learning more, from fewer demonstrations.
