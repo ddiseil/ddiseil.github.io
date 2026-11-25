@@ -2,238 +2,79 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DISEIL: Demonstration Distillation for Sample-Efficient Imitation Learning</title>
-<meta name="description" content="DISEIL groups a robot policy's recurring failures, selects one failure mode, and prescribes where the next expert demonstration should begin. Simulation benchmark and real UR5e demonstration.">
+<meta name="description" content="DISEIL decides which failure the next expert demonstration should correct, and where it should start.">
 <link rel="canonical" href="https://ddiseil.github.io/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="DISEIL: Demonstration Distillation for Sample-Efficient Imitation Learning">
-<meta property="og:description" content="Recurring failures decide which demonstration to collect next.">
+<meta property="og:description" content="Which failure should the next demonstration correct, and where should it start?">
 <meta property="og:url" content="https://ddiseil.github.io/">
 <meta property="og:image" content="https://ddiseil.github.io/assets/img/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="citation_title" content="DISEIL: Demonstration Distillation for Sample-Efficient Imitation Learning">
 <meta name="citation_author" content="Khanal, Suyog"><meta name="citation_author" content="A V, Arun Kumar"><meta name="citation_author" content="Rana, Santu">
-<meta name="citation_publication_date" content="2026">
-<meta name="citation_pdf_url" content="https://nemo.semantic.review/papers/32.pdf">
+<meta name="citation_publication_date" content="2026"><meta name="citation_arxiv_id" content="2609.08123"><meta name="citation_pdf_url" content="https://arxiv.org/pdf/2609.08123">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 30 16 16 30 2 16Z' fill='%23c1272d'/%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/source-sans-3-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<a class="skip" href="#overview">Skip to the overview</a>
-
-<div class="page">
-<header class="top">
+<header>
   <h1><span class="red">DISEIL:</span> Demonstration Distillation for Sample-Efficient Imitation Learning</h1>
-  <div class="intro">
-    <div class="meta">
-      <div class="authors"><span>Suyog Khanal</span><span>Arun Kumar A V</span><span>Santu Rana</span></div>
-      <div class="affil"><span>Deakin Applied Artificial Intelligence Initiative, Deakin University, Geelong, Australia</span></div>
-      <p class="accepted">This work has been accepted to the Neuro-Symbolic Embodied Intelligence (NEmo) Workshop at NeurIPS 2026.</p>
-    </div>
-    <div>
-      <p class="thesis">A policy that keeps failing in the same way does not need a new demonstration for every failure. DISEIL finds the failures that belong together, selects one group, and prescribes where the expert should begin the next demonstration.</p>
-      <div class="links"><a href="https://nemo.semantic.review/papers/32.pdf">Paper</a><a href="#real">Robot video</a><a href="#results">Results</a><a href="#cite">BibTeX</a></div>
-    </div>
-  </div>
-
-  <figure class="hero-figure">
-    <canvas id="loop-hero" role="img" aria-label="Animated schematic of DISEIL's acquisition loop. A robot arm practises from many starts, the failed starts are marked on a map, grouped into failure modes, one mode is selected, a start for the next expert demonstration is proposed and checked, the expert demonstrates, and the region the policy can solve grows."></canvas>
-    <div class="score" role="group" aria-label="Jump to a stage of the loop"></div>
-    <div class="hero-caption">
-      <p class="now" aria-live="off"></p>
-      <button class="plain" type="button" data-loop-toggle>Pause animation</button>
-    </div>
-    <figcaption>Schematic of the method, not experiment data. Three acquisition rounds: the robot, and a map of start configurations that is dark where the policy succeeds. Squares are the initial demonstrations, black dots are successful practice starts, rings are failed starts, outlines are failure modes (grouped by geometry at <em class="m">t*</em>, drawn at their starts), and red diamonds are the demonstrations DISEIL asks for. The size of each solved region is illustrative.</figcaption>
-  </figure>
+  <p class="authors"><span>Suyog Khanal</span> <span>Arun Kumar A V</span> <span>Santu Rana</span></p>
+  <p class="affil">Deakin Applied Artificial Intelligence Initiative, Deakin University</p>
+  <p class="links"><a href="https://arxiv.org/pdf/2609.08123">Paper</a><a href="https://arxiv.org/abs/2609.08123">arXiv</a><a href="#real">Video</a><a href="#bibtex">BibTeX</a></p>
 </header>
 
-<div class="layout">
-  <aside class="rail" aria-label="Running figure and contents">
-    <div class="rail-in">
-      <canvas id="loop-rail" aria-hidden="true"></canvas>
-      <div class="rail-stage"><div class="rail-head"><strong></strong><button class="plain" type="button" data-loop-toggle>Pause animation</button></div><p></p></div>
-      <nav aria-label="Contents">
-        <a href="#overview">Overview</a><a href="#method">Method</a><a href="#simulation">Simulation</a><a href="#real">Real robot</a><a href="#paper">Paper</a><a href="#cite">Cite</a>
-      </nav>
+<main>
+  <figure class="teaser">
+    <canvas id="teaser" role="img" aria-label="Line drawing of one round of DISEIL: a robot arm practises, some attempts fail, similar failures are grouped, one group is selected, a start for the next demonstration is recommended, an expert demonstrates once, and the updated policy solves more of them."></canvas>
+    <figcaption><span id="teaser-caption"></span><button id="teaser-pause" type="button">Pause</button></figcaption>
+  </figure>
+
+  <p class="summary">Existing methods decide when to ask an expert for help. DISEIL also decides <strong>which failure to correct</strong> and <strong>where the demonstration should start</strong>.</p>
+
+  <section id="simulation">
+    <h2>Simulation</h2>
+    <div class="tasks">
+      <div class="task" data-sync><h3>Push-T</h3>
+        <figure><video muted playsinline preload="none" poster="assets/sim/pusht_before.jpg" data-end="assets/sim/pusht_before_end.jpg" src="assets/sim/pusht_before.mp4" width="832" height="466" aria-label="Push-T before: the block stops off its goal"></video><figcaption>Before</figcaption></figure>
+        <figure><video muted playsinline preload="none" poster="assets/sim/pusht_after.jpg" data-end="assets/sim/pusht_after_end.jpg" src="assets/sim/pusht_after.mp4" width="832" height="466" aria-label="Push-T after one added demonstration: the block reaches its goal"></video><figcaption>After</figcaption></figure></div>
+      <div class="task" data-sync><h3>Door</h3>
+        <figure><video muted playsinline preload="none" poster="assets/sim/door_before.jpg" data-end="assets/sim/door_before_end.jpg" src="assets/sim/door_before.mp4" width="832" height="466" aria-label="Door before: the door does not open far enough"></video><figcaption>Before</figcaption></figure>
+        <figure><video muted playsinline preload="none" poster="assets/sim/door_after.jpg" data-end="assets/sim/door_after_end.jpg" src="assets/sim/door_after.mp4" width="832" height="466" aria-label="Door after one added demonstration: the door opens"></video><figcaption>After</figcaption></figure></div>
+      <div class="task" data-sync><h3>Wipe</h3>
+        <figure><video muted playsinline preload="none" poster="assets/sim/wipe_before.jpg" data-end="assets/sim/wipe_before_end.jpg" src="assets/sim/wipe_before.mp4" width="832" height="466" aria-label="Wipe before: part of the trail is left"></video><figcaption>Before</figcaption></figure>
+        <figure><video muted playsinline preload="none" poster="assets/sim/wipe_after.jpg" data-end="assets/sim/wipe_after_end.jpg" src="assets/sim/wipe_after.mp4" width="832" height="466" aria-label="Wipe after one added demonstration: the table is clean"></video><figcaption>After</figcaption></figure></div>
     </div>
-  </aside>
+    <p class="note">Same start, before and after one added demonstration. Selected examples; it does not fix every failure.</p>
+    <p class="claim">Highest mean success after 20 demonstrations in all ten settings, with one tie</p>
+    <figure class="plot"><img src="assets/paper/fig3.webp" width="2196" height="615" loading="lazy" alt="Success rate against demonstrations added on Push-T, Door, Wipe and Lift for DISEIL and five baselines."></figure>
+  </section>
 
-  <main>
-    <section id="overview">
-      <h2>Which demonstration should come next?</h2>
-      <div class="prose">
-        <p>Imitation learning copies an expert, so every demonstration costs expert time. After the first demonstrations, a policy can practise on its own, and its failures show what it still lacks. Each new request to the expert, in round <em class="m">r</em>, is then a decision with three parts.</p>
-        <div class="eq" role="math" aria-label="A r equals the triple t star, C target, xi"><em class="m">A<sub>r</sub></em> = ( <em class="m">t*</em>, <em class="m red">C<sub>tgt</sub></em>, <em class="m red">ξ</em> )</div>
-        <dl class="decision">
-          <dt><em class="m">t*</em></dt><dd><strong>When</strong> should the expert be queried?</dd>
-          <dt><em class="m red">C<sub>tgt</sub></em></dt><dd><strong>Which</strong> recurring failure should receive supervision?</dd>
-          <dt><em class="m red">ξ</em></dt><dd><strong>Where</strong> should the next demonstration begin?</dd>
-        </dl>
-        <p>Query-gated methods choose <em class="m">t*</em>, while the other two default to whichever episode triggered the query and the state it had reached. DISEIL keeps the query rule and selects <em class="m red">C<sub>tgt</sub></em> and <em class="m red">ξ</em>, so one expert interaction can address a deficiency seen across several failures.</p>
-      </div>
-      <figure class="block">
-        <button class="paperfig" type="button" data-zoom="assets/paper/fig1.webp" data-label="Figure 1 of the paper"><img src="assets/paper/fig1.webp" width="1730" height="421" loading="lazy" alt="Line drawings of one acquisition round: the policy keeps failing, a language model prescribes demonstrations, the expert gives a demonstration, the demonstration is added, the policy is updated, the policy improves."></button>
-        <figcaption>Figure 1 of the paper: DISEIL in one acquisition round.</figcaption>
-      </figure>
-    </section>
+  <section id="real">
+    <h2>Real Robot</h2>
+    <video class="film" controls playsinline preload="none" poster="assets/real/diseil_demo_poster.jpg" src="assets/real/diseil_demo.mp4" width="1920" height="1080" aria-label="DISEIL on a UR5e, narrated video"><track kind="captions" srclang="en" label="English" src="assets/real/diseil_demo.vtt"></video>
+    <p class="note">One qualitative round on a UR5e, additional to the paper’s simulation study.</p>
+  </section>
 
-    <section id="method">
-      <h2>One acquisition round</h2>
-      <p class="lead">After each round of autonomous practice, the failed rollouts become a single demonstration request.</p>
-
-      <div class="step" data-stage="1"><div class="n">1</div><div>
-        <h3>Perceive</h3>
-        <p>Each failed episode is anchored at <em class="m">t*</em>, the first step that begins a sustained run of loss above a threshold <em class="m">η</em>. That is where the failure begins to emerge, rather than a later state where its effects have piled up. The robot and object state at <em class="m">t*</em> becomes a compact geometric descriptor chosen per task; on Push-T it is the object’s position and rotation, the progress through the episode, and the distance between the object and the end effector.</p>
-        <p class="detail">In parallel, a vision-language model describes the start, <em class="m">t*</em> and end frames, and a text-only prescription model maps that description to a root cause.</p>
-      </div></div>
-      <div class="step" data-stage="2"><div class="n">2</div><div>
-        <h3>Partition</h3>
-        <p>The descriptors are clustered into failure modes, with the number of modes chosen by silhouette score. Language models take no part in this step.</p>
-      </div></div>
-      <div class="step" data-stage="3"><div class="n">3</div><div>
-        <h3>Prioritize</h3>
-        <p>DISEIL selects among the largest modes by how high their loss peaks, and discounts modes close to ones it has already corrected. Prevalence favours corrections that apply to several episodes, severity favours consequential ones, and a memory of corrected modes discourages repeating similar corrections.</p>
-      </div></div>
-      <div class="step" data-stage="4"><div class="n">4</div><div>
-        <h3>Prescribe</h3>
-        <p>The prescription model receives the selected mode’s geometry, up to three annotated failures and the task constraints. It proposes a start <em class="m red">ξ</em>: either the state of one cited failure, or a new configuration that bridges two or more related failures.</p>
-        <p>Every proposal is checked for workspace, reachability and a valid path, and must still be unsolved by the current policy. Rejected proposals go back with the reason and cost no demonstration. After five rejections DISEIL falls back to the nearest failure state it has not tried. The expert then demonstrates once from <em class="m red">ξ</em>, and the policy is retrained.</p>
-      </div></div>
-
-      <p class="prose"><span><strong>Who does what.</strong> The language models only reason about <em>what to demonstrate</em>. Geometric clustering forms the failure modes; size, loss and memory select one; explicit constraints check feasibility; and the learned policy produces every robot action.</span></p>
-
-      <figure class="block">
-        <button class="paperfig" type="button" style="max-width:640px" data-zoom="assets/paper/fig5.webp" data-label="Figure 5 of the paper"><img src="assets/paper/fig5.webp" width="1325" height="1166" loading="lazy" alt="Nine Push-T frames in three rows. Mode M0, not well aligned; mode M1, strongly misaligned; mode M2, badly rotated."></button>
-        <figcaption>Figure 5 of the paper: failure modes found on Push-T with image observations. Each row shows three members of one geometric cluster. The labels come from DISEIL’s own naming pipeline, not from independent annotation.</figcaption>
-      </figure>
-      <figure class="block">
-        <button class="paperfig" type="button" style="max-width:760px" data-zoom="assets/paper/fig2.webp" data-label="Figure 2 of the paper"><img src="assets/paper/fig2.webp" width="1656" height="1896" loading="lazy" alt="Diagram of a DISEIL acquisition round with the Perceive, Partition, Prioritize and Prescribe stages, the knowledge base, the constraint check and the update of the policy."></button>
-        <figcaption>Figure 2 of the paper: the full acquisition round. The query gate anchors each failure at <em class="m">t*</em>; geometric descriptors partition failures into modes, and language annotations support a task-valid prescription. VLM: vision-language model; PM: prescription model; P: proposed configurations.</figcaption>
-      </figure>
-    </section>
-
-    <section id="simulation">
-      <h2>Simulation</h2>
-      <p class="lead">Five tasks, each with state and with image observations. Every method gets the same initial demonstrations, expert, budget and evaluation.</p>
-      <div class="tasks block">
-        <figure><svg viewBox="0 0 160 120" role="img" aria-label="Five by five grid with three obstacles"><rect width="160" height="120" fill="#f5f7f9"/><g transform="translate(35 15)"><path d="M0 0H90V90H0ZM18 0V90M36 0V90M54 0V90M72 0V90M0 18H90M0 36H90M0 54H90M0 72H90" fill="none" stroke="#b9c0ca"/><path d="M18 18h18v18H18zM54 36h18v18H54zM36 54h18v18H36z" fill="#3b4a5e"/><circle cx="9" cy="81" r="5.4" fill="#1e2430"/><path d="M72 0h18v18H72z" fill="none" stroke="#1e2430" stroke-width="2.4"/></g></svg><figcaption><b>GridWorld</b>5 × 5 navigation (schematic)</figcaption></figure>
-        <figure><img src="assets/img/task_pusht.webp" width="640" height="480" loading="lazy" alt="Robot arm pushing a red T-shaped block on a table"><figcaption><b>Push-T</b>push a block to a pose</figcaption></figure>
-        <figure><img src="assets/img/task_lift.webp" width="640" height="480" loading="lazy" alt="UR5e arm above a small red cube on a white table"><figcaption><b>Lift</b>lift a cube</figcaption></figure>
-        <figure><img src="assets/img/task_wipe.webp" width="640" height="480" loading="lazy" alt="UR5e arm above a white table with a brown trail to wipe"><figcaption><b>Wipe</b>wipe a surface</figcaption></figure>
-        <figure><img src="assets/img/task_door.webp" width="640" height="480" loading="lazy" alt="UR5e arm in front of a door with a handle"><figcaption><b>Door</b>open a door</figcaption></figure>
-      </div>
-
-      <div class="block">
-        <h3>Three acquisition rounds</h3>
-        <p class="prose" style="margin-top:12px">Each set of three is one round: a failing rollout, the demonstration given from the prescribed start, and the same seed after the policy is refit with that demonstration. The clips were re-run for filming, and the Door and Wipe policies were rebuilt from their runs’ data. The seeds were chosen as clear examples. One demonstration does not correct every failure in its mode; on Wipe, the refit shown here corrects only the filmed seed.</p>
-      </div>
-      <div class="block">
-        <div class="round" data-sync><h4>Push-T <span>(state)</span></h4>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/pusht_before.jpg" src="assets/sim/pusht_before.mp4" data-end="assets/sim/pusht_before_end.jpg" width="832" height="466" aria-label="Push-T before: the block stops short of its goal"></video></div><figcaption><b>Before.</b> The block stops off its goal.</figcaption></figure>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/pusht_expert.jpg" src="assets/sim/pusht_expert.mp4" data-end="assets/sim/pusht_expert_end.jpg" width="816" height="454" aria-label="Push-T expert demonstration"></video></div><figcaption><b>Demonstration</b> from the prescribed start.</figcaption></figure>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/pusht_after.jpg" src="assets/sim/pusht_after.mp4" data-end="assets/sim/pusht_after_end.jpg" width="832" height="466" aria-label="Push-T after: the block reaches its goal"></video></div><figcaption><b>After.</b> Same seed, one demonstration later: the block reaches its goal.</figcaption></figure>
-        </div>
-        <div class="round" data-sync><h4>Door <span>(state)</span></h4>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/door_before.jpg" src="assets/sim/door_before.mp4" data-end="assets/sim/door_before_end.jpg" width="832" height="466" aria-label="Door before: the door moves but does not open far enough"></video></div><figcaption><b>Before.</b> The door does not open far enough.</figcaption></figure>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/door_expert.jpg" src="assets/sim/door_expert.mp4" data-end="assets/sim/door_expert_end.jpg" width="816" height="454" aria-label="Door expert demonstration"></video></div><figcaption><b>Demonstration</b> from a pose bridging two failures.</figcaption></figure>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/door_after.jpg" src="assets/sim/door_after.mp4" data-end="assets/sim/door_after_end.jpg" width="832" height="466" aria-label="Door after: the door opens"></video></div><figcaption><b>After.</b> Same seed, one demonstration later: the door opens.</figcaption></figure>
-        </div>
-        <div class="round" data-sync><h4>Wipe <span>(state)</span></h4>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/wipe_before.jpg" src="assets/sim/wipe_before.mp4" data-end="assets/sim/wipe_before_end.jpg" width="832" height="466" aria-label="Wipe before: a spot is left on the table"></video></div><figcaption><b>Before.</b> Part of the trail is left.</figcaption></figure>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/wipe_expert.jpg" src="assets/sim/wipe_expert.mp4" data-end="assets/sim/wipe_expert_end.jpg" width="816" height="454" aria-label="Wipe demonstration: the policy runs to the trigger step, then the expert finishes"></video></div><figcaption><b>Demonstration.</b> The rollout is replayed to <em class="m">t*</em>, where the expert takes over; only the expert’s part is added.</figcaption></figure>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/sim/wipe_after.jpg" src="assets/sim/wipe_after.mp4" data-end="assets/sim/wipe_after_end.jpg" width="832" height="466" aria-label="Wipe after: the table is clean"></video></div><figcaption><b>After.</b> Same seed, one demonstration later: the table is clean.</figcaption></figure>
-        </div>
-      </div>
-
-      <div class="block" id="results">
-        <h3>Highest mean success in all ten settings, with one tie</h3>
-        <p class="prose" style="margin-top:12px">The baselines are SafeDAgger, DropoutDAgger, EnsembleDAgger, ThriftyDAgger and Diff-DAgger, which differ mainly in when they query the expert, and, on GridWorld only, Stagger as a random-takeover control.</p>
-        <figure style="margin-top:22px">
-          <div class="chart" id="chart">
-            <div class="legend" aria-hidden="true">
-              <span><svg width="18" height="18"><path d="M9 1.5 16.5 9 9 16.5 1.5 9Z" fill="#c1272d"/></svg>DISEIL</span>
-              <span><svg width="14" height="14"><circle cx="7" cy="7" r="5.4" fill="#3b4a5e"/></svg>strongest baseline</span>
-              <span><svg width="14" height="14"><circle cx="7" cy="7" r="4.6" fill="#fff" stroke="#8a929d" stroke-width="1.7"/></svg>other baselines</span>
-            </div>
-            <div class="plot"><noscript><img src="assets/paper/table1.webp" alt="Table 1 of the paper" style="width:100%;height:auto"></noscript></div>
-            <div class="tip" hidden></div>
-          </div>
-          <figcaption>Mean over 9 GridWorld and 5 robot-task seeds; bars are ± one standard error (DISEIL and the strongest baseline). ThriftyDAgger ties DISEIL on Lift (state) (dark ring in the chart). The margin over the strongest baseline averages 2.80 points (range 0.0 to 5.6): the result lies in consistency across settings rather than a large gain on any single task. Diff-DAgger runs on the robot tasks only.</figcaption>
-          <details class="data"><summary>All values (Table 1)</summary><p class="cap">Held-out success (%) after 20 added demonstrations, mean ± standard error. Bold: highest in the row.</p><div class="scroll" tabindex="0" role="region" aria-label="Table 1 values"><table class="t1"></table></div></details>
-        </figure>
-      </div>
-
-      <figure class="block">
-        <button class="paperfig" type="button" data-zoom="assets/paper/fig3.webp" data-label="Figure 3 of the paper"><img src="assets/paper/fig3.webp" width="2196" height="615" loading="lazy" alt="Four learning-curve panels: Push-T state, Door state, Wipe image and Lift state."></button>
-        <figcaption>Figure 3 of the paper: held-out success against demonstrations acquired (mean ± standard error). DISEIL is the dashed orange line and Diff-DAgger the red one. On Push-T it separates from the strongest baselines after about five demonstrations. On Lift (state) it reaches 100% after nine demonstrations, nine earlier than ThriftyDAgger.</figcaption>
-      </figure>
-      <figure class="block">
-        <button class="paperfig" type="button" style="max-width:820px" data-zoom="assets/paper/fig4.webp" data-label="Figure 4 of the paper"><img src="assets/paper/fig4.webp" width="1541" height="705" loading="lazy" alt="Final success at budgets of 10, 20 and 40 demonstrations for Push-T state, GridWorld image and Door image."></button>
-        <figcaption>Figure 4 of the paper: final success at three budgets, DISEIL in orange. Over these settings the margin over the strongest baseline averages 9.07 points at 10 demonstrations, 2.87 at 20 and 2.83 at 40: the choice of failure mode has its largest observed effect when demonstrations are most limited.</figcaption>
-      </figure>
-    </section>
-
-    <section id="real">
-      <h2>On a real UR5e</h2>
-      <p class="lead">We also ran one acquisition round on a physical arm that has to lift a cube. The paper’s experiments are all in simulation; this run is additional to them.</p>
-      <figure class="block film">
-        <video controls playsinline preload="none" poster="assets/real/diseil_demo_poster.jpg" src="assets/real/diseil_demo.mp4" width="1920" height="1080" aria-label="DISEIL on the UR5e, narrated video"><track kind="captions" srclang="en" label="English" src="assets/real/diseil_demo.vtt"></video>
-        <figcaption>DISEIL on the UR5e, narrated (3 min 42 s).</figcaption>
-      </figure>
-      <div class="block seq">
-        <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/real/demo_b.jpg" src="assets/real/demo_b.mp4" data-end="assets/real/demo_b_end.jpg" width="640" height="800" aria-label="An expert guides the arm by hand to the cube"></video></div><figcaption><b>The expert teaches</b>The arm is guided to the cube by hand, at different cube positions. These demonstrations train the first policy.</figcaption></figure>
-        <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/real/before_6.jpg" src="assets/real/before_6.mp4" data-end="assets/real/before_6_end.jpg" width="640" height="800" aria-label="The gripper closes on the top of the cube and rises without it"></video></div><figcaption><b>The policy practises</b>Most attempts lift the cube. In some, the fingers close on its edge and rise empty.</figcaption></figure>
-        <figure><div class="clip"><img src="assets/real/rec.webp" loading="lazy" alt="Overhead camera image: a crosshair marks the recommended cube position on the mat, the cube is elsewhere" style="object-position:30% 60%"></div><figcaption><b>DISEIL recommends</b>Seen from the overhead camera: the crosshair marks the configuration to demonstrate next, here a cube position.</figcaption></figure>
-        <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/real/place.jpg" src="assets/real/place.mp4" data-end="assets/real/place_end.jpg" width="640" height="800" aria-label="A hand slides the cube to the recommended position"></video></div><figcaption><b>The scene is set</b>The cube is moved to the recommended position.</figcaption></figure>
-        <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/real/stop.jpg" src="assets/real/stop.mp4" data-end="assets/real/stop_end.jpg" width="640" height="800" aria-label="The researcher releases the gripper; the arm moves a short way on its own and stops well above the cube"></video></div><figcaption><b>The policy stops</b>Released by the researcher, the arm moves a short way on its own and stops at a high-uncertainty point, well above the cube.</figcaption></figure>
-        <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/real/expert.jpg" src="assets/real/expert.mp4" data-end="assets/real/expert_end.jpg" width="640" height="800" aria-label="The expert guides the gripper down around the cube; the gripper then closes and lifts it"></video></div><figcaption><b>One demonstration</b>The expert guides the gripper down around the cube, once; the gripper then closes and lifts the cube. The policy is updated with this demonstration.</figcaption></figure>
-      </div>
-      <div class="block">
-        <h3>Before and after the targeted demonstration</h3>
-        <div class="pair" style="margin-top:18px">
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/real/before_14.jpg" src="assets/real/before_14.mp4" data-end="assets/real/before_14_end.jpg" width="640" height="800" aria-label="Initial policy: the gripper closes on the cube's edge and rises empty"></video></div><figcaption><b>Initial policy.</b> A failed grasp on the left of the mat.</figcaption></figure>
-          <figure><div class="clip"><video data-auto muted playsinline preload="none" poster="assets/real/after.jpg" src="assets/real/after.mp4" data-end="assets/real/after_end.jpg" width="640" height="800" aria-label="Updated policy lifts the cube"></video></div><figcaption><b>Updated policy.</b> A successful lift, cube near the recommended position.</figcaption></figure>
-        </div>
-        <p class="prose block"><span>This is a qualitative run of one task and one acquisition round; the two cube positions are similar, not identical. The initial policy also lifted the cube from this side of the mat in other attempts.</span></p>
-      </div>
-    </section>
-
-    <section id="paper">
-      <h2>Paper</h2>
-      <p class="lead"><a href="https://nemo.semantic.review/papers/32.pdf">Read the full paper (PDF)</a><span class="noprint">, or open a page below</span>.</p>
-      <div class="pages block" role="group" aria-label="Pages of the paper">
-        <button type="button" data-zoom="assets/paper/page-1.webp" data-label="Page 1"><img src="assets/paper/thumb-1.webp" width="560" height="725" loading="lazy" alt="Page 1 of the paper"></button><button type="button" data-zoom="assets/paper/page-2.webp" data-label="Page 2"><img src="assets/paper/thumb-2.webp" width="560" height="725" loading="lazy" alt="Page 2 of the paper"></button><button type="button" data-zoom="assets/paper/page-3.webp" data-label="Page 3"><img src="assets/paper/thumb-3.webp" width="560" height="725" loading="lazy" alt="Page 3 of the paper"></button><button type="button" data-zoom="assets/paper/page-4.webp" data-label="Page 4"><img src="assets/paper/thumb-4.webp" width="560" height="725" loading="lazy" alt="Page 4 of the paper"></button><button type="button" data-zoom="assets/paper/page-5.webp" data-label="Page 5"><img src="assets/paper/thumb-5.webp" width="560" height="725" loading="lazy" alt="Page 5 of the paper"></button><button type="button" data-zoom="assets/paper/page-6.webp" data-label="Page 6"><img src="assets/paper/thumb-6.webp" width="560" height="725" loading="lazy" alt="Page 6 of the paper"></button><button type="button" data-zoom="assets/paper/page-7.webp" data-label="Page 7"><img src="assets/paper/thumb-7.webp" width="560" height="725" loading="lazy" alt="Page 7 of the paper"></button><button type="button" data-zoom="assets/paper/page-8.webp" data-label="Page 8"><img src="assets/paper/thumb-8.webp" width="560" height="725" loading="lazy" alt="Page 8 of the paper"></button>
-      </div>
-      <div class="block prose">
-        <h3>Scope</h3>
-        <p>The quantitative study is in simulation, where the geometric descriptor uses privileged robot and object state; a physical system would have to estimate these from sensing, and the robustness of the grouping to estimation error is untested. Very small late-stage failure sets may give too little evidence for meaningful clustering. Most experts in the study are scripted or oracle policies, so the experiments miss the variability of human demonstrations. The budget counts whole demonstrations, not expert-controlled steps, so a prescribed demonstration may need different expert effort than a query-triggered correction. In the instrumented settings, language-model reasoning adds 63 to 1,232 seconds per acquisition round; this affects acquisition, not policy execution, and its trade-off against expert effort is not evaluated.</p>
-      </div>
-    </section>
-
-    <section id="cite">
-      <div class="cite-head"><h2>Cite</h2><button class="plain" type="button" id="copy">Copy</button></div>
-<pre id="bibtex">@inproceedings{khanal2026diseil,
-  title     = {{DISEIL}: Demonstration Distillation for Sample-Efficient Imitation Learning},
-  author    = {Khanal, Suyog and {A V}, Arun Kumar and Rana, Santu},
-  booktitle = {NeurIPS 2026 Workshop on Neuro-Symbolic Embodied Intelligence (NEmo)},
-  year      = {2026},
-  url       = {https://nemo.semantic.review/papers/32.pdf}
-}</pre>
-    </section>
-  </main>
-</div>
-
-<footer>Typeface: Source Sans 3 (SIL Open Font License).</footer>
-</div>
-
-<div class="dock"><canvas id="loop-dock" aria-hidden="true"></canvas><div class="txt"><div class="rail-head"><strong aria-hidden="true"></strong><button class="plain" type="button" data-loop-toggle data-short>Pause</button></div><p aria-hidden="true"></p></div></div>
-
-<dialog aria-label="Enlarged figure"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt=""><div class="bar"><span></span><button class="plain" type="button">Close</button></div></dialog>
-
-<script type="application/json" id="table1">{"methods":["SafeDAgger","DropoutDAgger","EnsembleDAgger","ThriftyDAgger","Stagger","Diff-DAgger","DISEIL"],"rows":[{"task":"GridWorld","obs":"state","D0":20,"init":48.9,"vals":[[85.3,0.9],[84.9,0.8],[86.2,0.7],[86.8,0.7],[85.7,0.5],null,[92.4,0.4]]},{"task":"GridWorld","obs":"image","D0":20,"init":47.0,"vals":[[88.8,0.9],[88.4,0.7],[88.8,0.9],[88.7,0.6],[89.1,0.8],null,[91.3,0.6]]},{"task":"Push-T","obs":"state","D0":20,"init":46.2,"vals":[[82.0,3.0],[84.8,2.7],[85.9,2.6],[83.2,3.2],null,[94.1,2.0],[96.1,1.6]]},{"task":"Push-T","obs":"image","D0":20,"init":43.3,"vals":[[78.1,3.5],[82.1,3.1],[83.2,3.0],[79.3,3.6],null,[89.0,2.1],[92.6,2.2]]},{"task":"Lift","obs":"state","D0":8,"init":67.2,"vals":[[99.2,0.7],[99.2,0.4],[99.2,0.4],[100.0,0.0],null,[99.2,0.4],[100.0,0.0]]},{"task":"Lift","obs":"image","D0":8,"init":66.4,"vals":[[99.6,0.4],[97.2,1.6],[98.8,0.7],[99.6,0.4],null,[99.6,0.4],[100.0,0.0]]},{"task":"Wipe","obs":"state","D0":12,"init":47.7,"vals":[[88.0,1.1],[88.6,1.8],[86.8,1.9],[89.0,1.1],null,[90.4,2.7],[93.1,1.3]]},{"task":"Wipe","obs":"image","D0":12,"init":45.2,"vals":[[69.6,2.4],[83.2,3.0],[84.4,3.2],[69.2,4.0],null,[88.6,1.4],[92.3,1.4]]},{"task":"Door","obs":"state","D0":4,"init":56.8,"vals":[[91.8,2.1],[92.5,1.2],[88.8,3.1],[89.6,1.7],null,[93.2,1.9],[96.6,1.9]]},{"task":"Door","obs":"image","D0":4,"init":43.1,"vals":[[82.4,1.4],[81.8,1.5],[83.0,4.9],[82.8,1.2],null,[84.2,1.6],[88.6,1.5]]}]}</script>
-<script src="js/loop.js"></script>
+  <section id="bibtex">
+    <h2>BibTeX</h2>
+    <div class="code"><button id="copy" type="button">Copy</button>
+<pre>@misc{khanal2026diseil,
+  title={DISEIL: Demonstration Distillation for Sample-Efficient Imitation Learning},
+  author={Suyog Khanal and Arun Kumar A V and Santu Rana},
+  year={2026},
+  eprint={2609.08123},
+  archivePrefix={arXiv},
+  primaryClass={cs.RO},
+  url={https://arxiv.org/abs/2609.08123},
+}</pre></div>
+    <p class="note">This work has been accepted to the NEmo Workshop at NeurIPS 2026.</p>
+  </section>
+</main>
+<script src="js/teaser.js"></script>
 <script src="js/site.js"></script>
 </body>
 </html>
